@@ -1,7 +1,7 @@
 /**
  * ThreeJS integration for Gadget VM
  */
-import { createVM, parse, process } from './index';
+import { createVM, parse, process } from './index.js';
 import type { Scene, Object3D } from 'three';
 
 export interface GadgetThreeJSIntegration {

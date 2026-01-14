@@ -1,7 +1,7 @@
 /**
  * BabylonJS integration for Gadget VM
  */
-import { createVM, parse, process } from './index';
+import { createVM, parse, process } from './index.js';
 import type { Scene, Mesh, AbstractMesh } from '@babylonjs/core';
 
 export interface GadgetBabylonIntegration {

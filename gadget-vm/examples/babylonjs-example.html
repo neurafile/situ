@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadget VM - BabylonJS Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            margin: 20px 0;
+            touch-action: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .controls textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .controls button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .controls button:hover {
+            background: #5568d3;
+        }
+
+        .controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #495057;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 BabylonJS Example</h1>
+        <div class="subtitle">Powered by Gadget VM (WASM)</div>
+        
+        <div id="status" class="status loading">Loading...</div>
+        
+        <canvas id="renderCanvas"></canvas>
+
+        <div class="controls">
+            <h3>Gadget Definition</h3>
+            <textarea id="gadgetSource" placeholder="Enter gadget definition...">collider box1 {
+  shape box(1, 1, 1)
+}
+
+listener click1 {
+  on collision
+  target "box1"
+  action playSound
+}
+
+action playSound {
+  playSound
+}</textarea>
+            <button id="loadGadget" disabled>Load Gadget</button>
+        </div>
+
+        <div class="info">
+            <h3>About</h3>
+            <p>This example demonstrates the Gadget VM integrated with BabylonJS. The 3D scene uses BabylonJS for rendering, and the Gadget VM processes gadget definitions to control scene behavior.</p>
+            <p>You can edit the gadget definition above and click "Load Gadget" to parse it using the VM. Use the mouse to rotate the camera around the scene.</p>
+        </div>
+    </div>
+
+    <!-- BabylonJS from CDN -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+
+    <script type="module">
+        import { initBabylonIntegration, loadGadget } from '../js-bindings/dist/babylonjs.js';
+
+        const statusEl = document.getElementById('status');
+        const canvas = document.getElementById('renderCanvas');
+        const loadButton = document.getElementById('loadGadget');
+        const gadgetSourceEl = document.getElementById('gadgetSource');
+
+        let integration = null;
+
+        // Initialize the application
+        async function init() {
+            try {
+                statusEl.textContent = 'Initializing BabylonJS engine...';
+                statusEl.className = 'status loading';
+
+                // Create BabylonJS engine
+                const engine = new BABYLON.Engine(canvas, true);
+
+                // Create scene
+                const scene = new BABYLON.Scene(engine);
+
+                // Create camera
+                const camera = new BABYLON.ArcRotateCamera(
+                    "Camera",
+                    Math.PI / 2,
+                    Math.PI / 2.5,
+                    5,
+                    BABYLON.Vector3.Zero(),
+                    scene
+                );
+                camera.attachControls(canvas, true);
+
+                // Add light
+                const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+
+                // Create a simple box to demonstrate
+                const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+                box.position.y = 0.5;
+                const material = new BABYLON.StandardMaterial("boxMaterial", scene);
+                material.diffuseColor = new BABYLON.Color3(0.4, 0.6, 1.0);
+                box.material = material;
+
+                // Create ground
+                const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
+                const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+                groundMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+                ground.material = groundMaterial;
+
+                // Render loop
+                engine.runRenderLoop(() => {
+                    scene.render();
+                });
+
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    engine.resize();
+                });
+
+                statusEl.textContent = 'Initializing Gadget VM...';
+                
+                // Initialize Gadget VM integration
+                integration = await initBabylonIntegration(scene);
+
+                statusEl.textContent = 'Ready! Edit the gadget definition and click "Load Gadget".';
+                statusEl.className = 'status ready';
+                loadButton.disabled = false;
+
+                // Load initial gadget
+                await loadGadget(integration, gadgetSourceEl.value);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Load gadget handler
+        loadButton.addEventListener('click', async () => {
+            if (!integration) return;
+
+            try {
+                statusEl.textContent = 'Loading gadget...';
+                statusEl.className = 'status loading';
+                loadButton.disabled = true;
+
+                await loadGadget(integration, gadgetSourceEl.value);
+
+                statusEl.textContent = 'Gadget loaded successfully!';
+                statusEl.className = 'status ready';
+            } catch (error) {
+                console.error('Error loading gadget:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            } finally {
+                loadButton.disabled = false;
+            }
+        });
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

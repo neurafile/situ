@@ -31,14 +31,17 @@ build-js: copy-wasm
 
 # Create example (assumes build is complete)
 example: build-js
-	@echo "=== Example is ready at gadget-vm/examples/piano-player.html ==="
+	@echo "=== Examples are ready: ==="
+	@echo "  - gadget-vm/examples/piano-player.html"
+	@echo "  - gadget-vm/examples/babylonjs-example.html"
+	@echo "  - gadget-vm/examples/threejs-example.html"
 
 # Clean all generated files
 clean:
 	@echo "=== Cleaning all generated files ==="
 	@cd gadget-vm/rust-vm && $(MAKE) clean
 	@cd gadget-vm/js-bindings && rm -rf dist node_modules wasm
-	@rm -f gadget-vm/examples/piano-player.html
+	@echo "Note: Example files are kept, use 'make clean-all' to remove them"
 
 # Help target
 help:
