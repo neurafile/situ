@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadget VM - Piano Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .piano-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 30px 0;
+        }
+
+        .piano-key {
+            border: 2px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-weight: bold;
+            font-size: 0.9em;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            user-select: none;
+            position: relative;
+        }
+
+        .piano-key.white {
+            background: #fff;
+            color: #333;
+            width: 60px;
+            height: 200px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .piano-key.black {
+            background: #333;
+            color: #fff;
+            width: 40px;
+            height: 120px;
+            margin-left: -22px;
+            margin-right: -22px;
+            z-index: 1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        .piano-key.white:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .piano-key.black:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        .piano-key.active {
+            background: #ff6b6b;
+            border-color: #ff4757;
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .piano-key.black.active {
+            background: #ff4757;
+            border-color: #ff3742;
+        }
+
+        .note-label {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #495057;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎹 Piano Player</h1>
+        <div class="subtitle">Powered by Gadget VM (WASM)</div>
+        
+        <div id="status" class="status loading">Loading WASM module...</div>
+        
+        <div class="piano-container" id="pianoContainer">
+            <!-- Piano keys will be generated here -->
+        </div>
+
+        <div class="info">
+            <h3>About</h3>
+            <p>This piano player uses the Gadget VM compiled to WebAssembly (WASM) to manage audio playback. Each key click plays a sound file, and the WASM module tracks which sounds are active. Click a key to play a note, click again to stop it.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initVM, createVM } from '../js-bindings/dist/index.js';
+
+        const statusEl = document.getElementById('status');
+        const pianoContainer = document.getElementById('pianoContainer');
+        
+        let vm = null;
+        const activeKeys = new Set();
+
+        // Piano keys configuration (C4 to C5)
+        const pianoKeys = [
+            { note: 'C4', isBlack: false },
+            { note: 'Db4', isBlack: true },
+            { note: 'D4', isBlack: false },
+            { note: 'Eb4', isBlack: true },
+            { note: 'E4', isBlack: false },
+            { note: 'F4', isBlack: false },
+            { note: 'Gb4', isBlack: true },
+            { note: 'G4', isBlack: false },
+            { note: 'Ab4', isBlack: true },
+            { note: 'A4', isBlack: false },
+            { note: 'Bb4', isBlack: true },
+            { note: 'B4', isBlack: false },
+            { note: 'C5', isBlack: false },
+        ];
+
+        // Create piano key buttons
+        function createPianoKeys() {
+            pianoKeys.forEach(({ note, isBlack }) => {
+                const key = document.createElement('div');
+                key.className = `piano-key ${isBlack ? 'black' : 'white'}`;
+                key.dataset.note = note;
+                key.innerHTML = `<span class="note-label">${note}</span>`;
+                
+                key.addEventListener('click', () => toggleKey(note, key));
+                
+                pianoContainer.appendChild(key);
+            });
+        }
+
+        // Toggle a key (play/stop sound)
+        async function toggleKey(note, keyElement) {
+            if (!vm) return;
+
+            const isActive = activeKeys.has(note);
+            const audioPath = `acoustic_grand_piano-mp3/${note}.mp3`;
+
+            if (isActive) {
+                // Stop the sound
+                vm.stop_sound(note);
+                activeKeys.delete(note);
+                keyElement.classList.remove('active');
+            } else {
+                // Play the sound
+                const soundId = vm.play_sound(audioPath, note);
+                if (soundId >= 0) {
+                    activeKeys.add(note);
+                    keyElement.classList.add('active');
+                }
+            }
+        }
+
+        // Initialize the application
+        async function init() {
+            try {
+                statusEl.textContent = 'Initializing WASM...';
+                statusEl.className = 'status loading';
+
+                await initVM();
+                vm = await createVM();
+
+                statusEl.textContent = 'Ready! Click keys to play.';
+                statusEl.className = 'status ready';
+                
+                createPianoKeys();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

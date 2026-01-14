@@ -1,0 +1,23 @@
+# Rust
+target/
+Cargo.lock
+*.wasm
+
+# Node
+node_modules/
+dist/
+*.log
+
+# ANTLR
+antlr-*.jar
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
