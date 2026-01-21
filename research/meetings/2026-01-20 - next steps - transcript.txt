@@ -1,0 +1,211 @@
+Steven Van Loon: Uh all right. So uh this is what I've been thinking about and in picture form it's it's really easy the text is just trying to describe this picture form uh really u so we have situ and we have our gadget VM I I I'm not calling it situ VM it's gadget VM gadget VM run situ done um uh and and you write gadgets in situ You know um what we have is in languages that we're doing there's a series of adapters uh where when we write something write a description of an adapter it affects the environment in which uh in which it came which in in which this VM is running. So it needs to affect the uh BabylonJS or the 3JS or the uh the uh uh the Unity or Unreal. Right? So that's that's the basic premise. I'm I'll get to that in a second. Uh what I've been thinking about is that uh when you create a gadget, we've talked about it mostly in spatial form.
+
+[00:08:38]
+Steven Van Loon: So like uh a piano is a virtual piano in front of you.
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: What I'm thinking about is that there is primarily another form in there which is a flat form. Uh uh and a flat HTML is primarily what I'm talking about. So like u uh we saw a web page with a piano on it. I had that running for a little bit and then it was calling the So like you had the piano rendered in here which then talks to the VM which then like the the you're you're still dealing with the gadget. So you hit the you hit the HTML piano uh and you're playing notes uh which is going through the VM to play the notes. So you you define the piano,
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: it renders in a browser which allows you to do interactions. Interactions aren't in here. But the piano, we've been mostly talking about the piano as like a a GB, right? So we're we're talking about a piano GB coming in and then but in a
+
+[00:09:47]
+Jordan Carlson: Mhm.
+
+Steven Van Loon: flat HTML file uh that doesn't mean anything really, right? Uh a GLB definition doesn't really doesn't really solve much because you can't render it unless you have uh probably web XR or something like that something to be able to render this model. uh and I don't know how to interact with that model in uh in most formats. So, I I want to think about this problem slightly differently and think about it as like a um uh I'm going to I'm going to start off with how we can get a flat a flat HTML and then go get to a point cloud as quickly as I can. So it's going to it's going to start off this way and then it's it's going to
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: or so uh uh bar charts and scatter plots, right? These things are traditionally very very flat. Uh they don't have they can come out into three dimensions, right? You can make those things into a three-dimensional bar chart or a three-dimensional scatter plot and it doesn't really change the the thing.
+
+[00:11:14]
+Steven Van Loon: doesn't add anything that it's in three dimensions, right? Uh a force graph uh or or if you think about it as a mind map, a mind map can have relationships uh that are uh interconnected. So most of the time we just have it where it's just spiraling out. But you can have a relationship like this where where a point cloud uh talks to a a 3D model or a point cloud talks as as a graph. You can think about these things in the same sort of methodology. Um uh and if you have enough of these sort of twists um uh threedimensionals actually starts helping you understand how twisted this data is. Um uh so a mind map a mind map is actually just a force graph um uh but a force graph in three dimensions. So like you can have it flat or you can break it out. So you could write every you could write all of these things as flat. You could write it in Unity.
+
+[00:12:32]
+Steven Van Loon: You could write in Unreal, 3JS, all of those, and you can represent these things in all of these different versions. And it's not really hard to imagine what that actually is. But when you have like a scatter plot, but a scatter plot in a plane like or in 3D, that gets you to a point cloud essentially, right? and and a point cloud is essentially an image.
+
+Jordan Carlson: Yep.
+
+Steven Van Loon: Uh so like to flatten that is just a picture uh of that uh of that point cloud from a particular point of view a particular camera and that's your that's your 2D representation right you can do that you can do that with a
+
+Jordan Carlson: Yep.
+
+Steven Van Loon: GB also um you can do that with a GB also I don't know how to do that programmatically in a GB um and that that's where I'm stuck. Um, if I could do that, if I could just say, "Here's a GB, produce an image of the GB," and then, uh, allow for somebody to like adjust a camera position and then just recalculate that image, you know, like if you did a 360 degree around it and you just uh moved a spinner, then then we have a the ability to represent something in 3D.
+
+[00:14:03]
+Steven Van Loon: Right? Like even though our representation's completely completely flat.
+
+Jordan Carlson: We probably could I wonder if it could you could have cursor write a program to do that.
+
+Steven Van Loon: Yeah. And in this case the the the program is actually written in Rust. uh the programs actually would be written in Rust and then it would generate the image on the fly and then it would feed that image out to out to the browser.
+
+Jordan Carlson: I
+
+Steven Van Loon: So this is more more like uh uh base
+
+Jordan Carlson: see.
+
+Steven Van Loon: 64 data is that's what I'm talking about. Do you know I'm uh well it it's the uh
+
+Jordan Carlson: Yeah, I know what B 64 is.
+
+Steven Van Loon: base 64 data image uh example. It's that it's that you can represent an image like this. So you can actually just encode a PNG and put it into
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: an image and it will actually display it. So this one is the the actual image down there.
+
+[00:15:20]
+Steven Van Loon: So we could do something like that.
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: It's possible you could do it with a like if we could do that with a a GB that'd be great, you know, and I want to do it where we can adjust the settings and then you can sort of zoom in and change the the the view of it. Um, I think that would that would be helpful. Uh, that would that would allow us to get this sort of uh where was I? That would allow us to get this flat adapter. Um, and then uh this flat adapter uh what it allows us to do
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: is the meeting that I actually have coming up uh I have a oh I have a meeting with web spatial Um, and uh, uh, I don't know if they're going to kick me out of this or whatnot. U, we'll see. Quick example. So, they have this. Come on. I want to There we go.
+
+[00:16:36]
+Steven Van Loon: Uh, this is close. Close enough. Maybe it's close enough. There it is. This is close enough. They have basically panels. Uh I'm sorry this is at an angle and really odd, but they have the the liquid uh liquid UI stuff, liquid interface. Um,
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: but they're doing it in the browser and then they're trying to get it where you can put something clear up and then now you can look at this as like a flat HTML, you know, and what I'm trying to think about is how could I
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: represent um the the the teleportal um the the force graph for the teleportal in in a flat way that is still interactable. And if I can do it in a if I can do it using a GB, great. If I have to use primitives like dots and uh dots and nodes, I can do that also. Um, that's that's sort of more because then I actually have to use physics in order to represent that in some way.
+
+[00:17:57]
+Steven Van Loon: So, if I can pre-render as a GB, then I don't have to worry about the physics. Um, which is kind of
+
+Jordan Carlson: So you basically just need a way to make the GB render in flat
+
+Steven Van Loon: what
+
+Jordan Carlson: space, but like have you still want to have the depth to it so that you could like click on the different nodes that are like behind or in front of and change.
+
+Steven Van Loon: Yes. And I want to be able to rotate it also. Yeah.
+
+Jordan Carlson: Yeah.
+
+Steven Van Loon: So I want to be able to rotate and zoom in on a flat GB. So this is not this is not like this is this is sort of creating a whole GB viewer. uh but not not in the way that everybody else does it which is relying on something like WebGL or something.
+
+Jordan Carlson: Right.
+
+Steven Van Loon: I don't know if I can rely on that. I don't even know if I can use Rust. Um uh so there's going
+
+[00:18:57]
+Jordan Carlson: So, would you want the Rust adapter thing to
+
+Steven Van Loon: to well Rust is the
+
+Jordan Carlson: to or the Yeah.
+
+Steven Van Loon: VM the the gadget
+
+Jordan Carlson: Yeah. Yeah.
+
+Steven Van Loon: VM.
+
+Jordan Carlson: I'm sorry. The the thing that changes it from GB to the flat HTML, the converter,
+
+Steven Van Loon: Yeah that
+
+Jordan Carlson: you want that in that would be part of the VM in Rust.
+
+Steven Van Loon: yes that would be HTML adapter.
+
+Jordan Carlson: And that would be and that would be uh a web assembly.
+
+Steven Van Loon: Yes, this is this would all be done in web assembly.
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: Um, so what I'm thinking about is um going
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: back
+
+Jordan Carlson: So in the code, would this be a separate mod a separate um separate file in the code or would you want it to be
+
+Steven Van Loon: um well, we'll we'll figure that out.
+
+Jordan Carlson: all
+
+Steven Van Loon: I don't know exactly yet. Like I'm I'm sort of at this early stage of planning and thinking about this.
+
+[00:19:55]
+Jordan Carlson: okay?
+
+Steven Van Loon: Um so I'm trying to think well how can I get how can I get a
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: uh a force graph? How can I represent the teleportal or some other graph in in the system as something that's flat but but interactable. So what I'm thinking about was I'm like,
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: okay, well this is part of a class of objects called graphs. There are also these 3D model route that's possible. There's actually some sort of like uh I'm still using 3D models, but I'm using sort of like translating it to the native Babylon or 3JS or Unity or Unreal primitives. You know, like I'm saying I want a I want a sphere and how I draw a sphere changes per each of these environments, you know, like uh I'm connecting to a scene and I'm using a Babylon
+
+Jordan Carlson: Yeah.
+
+Steven Van Loon: sphere uh in this one. This one I'm using a a node a 3JS uh uh sphere. This one I'm using, you know, a unity sphere.
+
+[00:21:22]
+Steven Van Loon: So, these are these are very sort of different uh constructs. These are the there's like the uh you're usually only in one of these at a time in in when the VM is running. It's going to pick one of these adapters, one of these strategies in order to render everything. So, you're not going to mix and match these. You're going to be like, I'm running in flat HTML. I'm running in Babylon. I'm running in
+
+Jordan Carlson: So question on that.
+
+Steven Van Loon: 3JS.
+
+Jordan Carlson: Um is there a scenario where your VM is running and it's serving multiple users and those users happen to be in Unity versus Babylon?
+
+Steven Van Loon: No.
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: No, because this VM is running inside somebody's machine.
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: This is running This is running inside uh this is running inside a browser on somebody's computer. This is running on a headset on somebody's computer because the gadget part out here when you start
+
+[00:22:32]
+Jordan Carlson: That's good.
+
+Steven Van Loon: getting into uh I'm sorry I don't have the the the diagram. Uh I think it's up here.
+
+Jordan Carlson: It might be in standup.
+
+Steven Van Loon: I I think it's I think it's this diagram actually.
+
+Jordan Carlson: We had some diagrams in stand up.
+
+Steven Van Loon: Um but it we don't have the we don't have
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: the actually I'm
+
+Jordan Carlson: I should have taken the screenshot.
+
+Steven Van Loon: going to do this. No. Well, I don't know if I copied that in or something. I don't know. I don't Doesn't particularly matter because I'm creating it here. So, I don't know how well this is going to turn out. Uh, but I'm going to put it in here and then we'll at least have something to reference. Whoops. All right. I I haven't even looked at this image yet. Okay. So we have the hello world, the gadget package, the grammar, that's the authoring, the services. So once we get into the services, um once we get into the services and things like that, we are talking about something that is off of out of the virtual machine. So we're we're somewhere in here. We're talking about things that are not running in the VM itself, but the VM is communicating with something
+
+Jordan Carlson: Mhm.
+
+Steven Van Loon: else.
+
+Jordan Carlson: Right.
+
+Steven Van Loon: Whether it's the native virtual world or if it's uh a centralized
+
+Jordan Carlson: Okay.
+
+Steven Van Loon: server, uh these things uh it's communicating with that.
+
+Jordan Carlson: Okay.

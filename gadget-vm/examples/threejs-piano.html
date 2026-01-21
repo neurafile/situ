@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gadget VM - ThreeJS Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        #threejs-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        #threejs-container canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .controls textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+
+        .controls button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .controls button:hover {
+            background: #5568d3;
+        }
+
+        .controls button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #495057;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .info code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 ThreeJS Example</h1>
+        <div class="subtitle">Powered by Gadget VM (WASM)</div>
+        
+        <div id="status" class="status loading">Loading...</div>
+        
+        <div id="threejs-container"></div>
+
+        <div class="controls">
+            <h3>Gadget Definition</h3>
+            <textarea id="gadgetSource" placeholder="Enter gadget definition...">
+                collider a1-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.4500, 0.0000, 0.0000)
+                  }
+                  
+                  listener a1-click {
+                    on collision
+                    target "a1-key"
+                    action playSoundA1
+                  }
+                  
+                  action playSoundA1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A1.mp3"
+                  }
+                  
+                  collider as1-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (0.5250, -0.2000, 0.1500)
+                  }
+                  
+                  listener as1-click {
+                    on collision
+                    target "as1-key"
+                    action playSoundAs1
+                  }
+                  
+                  action playSoundAs1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#1.mp3"
+                  }
+                  
+                  collider b1-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.6000, 0.0000, 0.0000)
+                  }
+                  
+                  listener b1-click {
+                    on collision
+                    target "b1-key"
+                    action playSoundB1
+                  }
+                  
+                  action playSoundB1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/B1.mp3"
+                  }
+                  
+                  collider c2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.7500, 0.0000, 0.0000)
+                  }
+                  
+                  listener c2-click {
+                    on collision
+                    target "c2-key"
+                    action playSoundC2
+                  }
+                  
+                  action playSoundC2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C2.mp3"
+                  }
+                  
+                  collider cs2-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (0.8250, -0.2000, 0.1500)
+                  }
+                  
+                  listener cs2-click {
+                    on collision
+                    target "cs2-key"
+                    action playSoundCs2
+                  }
+                  
+                  action playSoundCs2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C#2.mp3"
+                  }
+                  
+                  collider d2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.9000, 0.0000, 0.0000)
+                  }
+                  
+                  listener d2-click {
+                    on collision
+                    target "d2-key"
+                    action playSoundD2
+                  }
+                  
+                  action playSoundD2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D2.mp3"
+                  }
+                  
+                  collider ds2-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (0.9750, -0.2000, 0.1500)
+                  }
+                  
+                  listener ds2-click {
+                    on collision
+                    target "ds2-key"
+                    action playSoundDs2
+                  }
+                  
+                  action playSoundDs2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D#2.mp3"
+                  }
+                  
+                  collider e1-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.0000, 0.0000, 0.0000)
+                  }
+                  
+                  listener e1-click {
+                    on collision
+                    target "e1-key"
+                    action playSoundE1
+                  }
+                  
+                  action playSoundE1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E1.mp3"
+                  }
+                  
+                  collider e2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.0500, 0.0000, 0.0000)
+                  }
+                  
+                  listener e2-click {
+                    on collision
+                    target "e2-key"
+                    action playSoundE2
+                  }
+                  
+                  action playSoundE2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E2.mp3"
+                  }
+                  
+                  collider f1-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.1500, 0.0000, 0.0000)
+                  }
+                  
+                  listener f1-click {
+                    on collision
+                    target "f1-key"
+                    action playSoundF1
+                  }
+                  
+                  action playSoundF1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F1.mp3"
+                  }
+                  
+                  collider f2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.2000, 0.0000, 0.0000)
+                  }
+                  
+                  listener f2-click {
+                    on collision
+                    target "f2-key"
+                    action playSoundF2
+                  }
+                  
+                  action playSoundF2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F2.mp3"
+                  }
+                  
+                  collider fs1-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (0.2250, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs1-click {
+                    on collision
+                    target "fs1-key"
+                    action playSoundFs1
+                  }
+                  
+                  action playSoundFs1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#1.mp3"
+                  }
+                  
+                  collider fs2-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (1.2750, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs2-click {
+                    on collision
+                    target "fs2-key"
+                    action playSoundFs2
+                  }
+                  
+                  action playSoundFs2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#2.mp3"
+                  }
+                  
+                  collider g1-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (0.3000, 0.0000, 0.0000)
+                  }
+                  
+                  listener g1-click {
+                    on collision
+                    target "g1-key"
+                    action playSoundG1
+                  }
+                  
+                  action playSoundG1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G1.mp3"
+                  }
+                  
+                  collider g2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.3500, 0.0000, 0.0000)
+                  }
+                  
+                  listener g2-click {
+                    on collision
+                    target "g2-key"
+                    action playSoundG2
+                  }
+                  
+                  action playSoundG2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G2.mp3"
+                  }
+                  
+                  collider gs1-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (0.3750, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs1-click {
+                    on collision
+                    target "gs1-key"
+                    action playSoundGs1
+                  }
+                  
+                  action playSoundGs1 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#1.mp3"
+                  }
+                  
+                  collider gs2-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (1.4250, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs2-click {
+                    on collision
+                    target "gs2-key"
+                    action playSoundGs2
+                  }
+                  
+                  action playSoundGs2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#2.mp3"
+                  }
+                  
+                  collider a2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.5000, 0.0000, 0.0000)
+                  }
+                  
+                  listener a2-click {
+                    on collision
+                    target "a2-key"
+                    action playSoundA2
+                  }
+                  
+                  action playSoundA2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A2.mp3"
+                  }
+                  
+                  collider as2-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (1.5750, -0.2000, 0.1500)
+                  }
+                  
+                  listener as2-click {
+                    on collision
+                    target "as2-key"
+                    action playSoundAs2
+                  }
+                  
+                  action playSoundAs2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#2.mp3"
+                  }
+                  
+                  collider b2-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.6500, 0.0000, 0.0000)
+                  }
+                  
+                  listener b2-click {
+                    on collision
+                    target "b2-key"
+                    action playSoundB2
+                  }
+                  
+                  action playSoundB2 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/B2.mp3"
+                  }
+                  
+                  collider c3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.8000, 0.0000, 0.0000)
+                  }
+                  
+                  listener c3-click {
+                    on collision
+                    target "c3-key"
+                    action playSoundC3
+                  }
+                  
+                  action playSoundC3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C3.mp3"
+                  }
+                  
+                  collider cs3-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (1.8750, -0.2000, 0.1500)
+                  }
+                  
+                  listener cs3-click {
+                    on collision
+                    target "cs3-key"
+                    action playSoundCs3
+                  }
+                  
+                  action playSoundCs3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C#3.mp3"
+                  }
+                  
+                  collider d3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (1.9500, 0.0000, 0.0000)
+                  }
+                  
+                  listener d3-click {
+                    on collision
+                    target "d3-key"
+                    action playSoundD3
+                  }
+                  
+                  action playSoundD3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D3.mp3"
+                  }
+                  
+                  collider ds3-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (2.0250, -0.2000, 0.1500)
+                  }
+                  
+                  listener ds3-click {
+                    on collision
+                    target "ds3-key"
+                    action playSoundDs3
+                  }
+                  
+                  action playSoundDs3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D#3.mp3"
+                  }
+                  
+                  collider e3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.1000, 0.0000, 0.0000)
+                  }
+                  
+                  listener e3-click {
+                    on collision
+                    target "e3-key"
+                    action playSoundE3
+                  }
+                  
+                  action playSoundE3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E3.mp3"
+                  }
+                  
+                  collider f3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.2500, 0.0000, 0.0000)
+                  }
+                  
+                  listener f3-click {
+                    on collision
+                    target "f3-key"
+                    action playSoundF3
+                  }
+                  
+                  action playSoundF3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F3.mp3"
+                  }
+                  
+                  collider fs3-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (2.3250, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs3-click {
+                    on collision
+                    target "fs3-key"
+                    action playSoundFs3
+                  }
+                  
+                  action playSoundFs3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#3.mp3"
+                  }
+                  
+                  collider g3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.4000, 0.0000, 0.0000)
+                  }
+                  
+                  listener g3-click {
+                    on collision
+                    target "g3-key"
+                    action playSoundG3
+                  }
+                  
+                  action playSoundG3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G3.mp3"
+                  }
+                  
+                  collider gs3-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (2.4750, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs3-click {
+                    on collision
+                    target "gs3-key"
+                    action playSoundGs3
+                  }
+                  
+                  action playSoundGs3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#3.mp3"
+                  }
+                  
+                  collider a3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.5500, 0.0000, 0.0000)
+                  }
+                  
+                  listener a3-click {
+                    on collision
+                    target "a3-key"
+                    action playSoundA3
+                  }
+                  
+                  action playSoundA3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A3.mp3"
+                  }
+                  
+                  collider as3-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (2.6250, -0.2000, 0.1500)
+                  }
+                  
+                  listener as3-click {
+                    on collision
+                    target "as3-key"
+                    action playSoundAs3
+                  }
+                  
+                  action playSoundAs3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#3.mp3"
+                  }
+                  
+                  collider b3-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.7000, 0.0000, 0.0000)
+                  }
+                  
+                  listener b3-click {
+                    on collision
+                    target "b3-key"
+                    action playSoundB3
+                  }
+                  
+                  action playSoundB3 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/B3.mp3"
+                  }
+                  
+                  collider c4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (2.8500, 0.0000, 0.0000)
+                  }
+                  
+                  listener c4-click {
+                    on collision
+                    target "c4-key"
+                    action playSoundC4
+                  }
+                  
+                  action playSoundC4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C4.mp3"
+                  }
+                  
+                  collider cs4-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (2.9250, -0.2000, 0.1500)
+                  }
+                  
+                  listener cs4-click {
+                    on collision
+                    target "cs4-key"
+                    action playSoundCs4
+                  }
+                  
+                  action playSoundCs4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C#4.mp3"
+                  }
+                  
+                  collider d4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.0000, 0.0000, 0.0000)
+                  }
+                  
+                  listener d4-click {
+                    on collision
+                    target "d4-key"
+                    action playSoundD4
+                  }
+                  
+                  action playSoundD4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D4.mp3"
+                  }
+                  
+                  collider ds4-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (3.0750, -0.2000, 0.1500)
+                  }
+                  
+                  listener ds4-click {
+                    on collision
+                    target "ds4-key"
+                    action playSoundDs4
+                  }
+                  
+                  action playSoundDs4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D#4.mp3"
+                  }
+                  
+                  collider e4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.1500, 0.0000, 0.0000)
+                  }
+                  
+                  listener e4-click {
+                    on collision
+                    target "e4-key"
+                    action playSoundE4
+                  }
+                  
+                  action playSoundE4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E4.mp3"
+                  }
+                  
+                  collider f4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.3000, 0.0000, 0.0000)
+                  }
+                  
+                  listener f4-click {
+                    on collision
+                    target "f4-key"
+                    action playSoundF4
+                  }
+                  
+                  action playSoundF4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F4.mp3"
+                  }
+                  
+                  collider fs4-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (3.3750, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs4-click {
+                    on collision
+                    target "fs4-key"
+                    action playSoundFs4
+                  }
+                  
+                  action playSoundFs4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#4.mp3"
+                  }
+                  
+                  collider g4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.4500, 0.0000, 0.0000)
+                  }
+                  
+                  listener g4-click {
+                    on collision
+                    target "g4-key"
+                    action playSoundG4
+                  }
+                  
+                  action playSoundG4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G4.mp3"
+                  }
+                  
+                  collider gs4-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (3.5250, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs4-click {
+                    on collision
+                    target "gs4-key"
+                    action playSoundGs4
+                  }
+                  
+                  action playSoundGs4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#4.mp3"
+                  }
+                  
+                  collider a4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.6000, 0.0000, 0.0000)
+                  }
+                  
+                  listener a4-click {
+                    on collision
+                    target "a4-key"
+                    action playSoundA4
+                  }
+                  
+                  action playSoundA4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A4.mp3"
+                  }
+                  
+                  collider as4-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (3.6750, -0.2000, 0.1500)
+                  }
+                  
+                  listener as4-click {
+                    on collision
+                    target "as4-key"
+                    action playSoundAs4
+                  }
+                  
+                  action playSoundAs4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#4.mp3"
+                  }
+                  
+                  collider b4-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.7500, 0.0000, 0.0000)
+                  }
+                  
+                  listener b4-click {
+                    on collision
+                    target "b4-key"
+                    action playSoundB4
+                  }
+                  
+                  action playSoundB4 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/B4.mp3"
+                  }
+                  
+                  collider c5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (3.9000, 0.0000, 0.0000)
+                  }
+                  
+                  listener c5-click {
+                    on collision
+                    target "c5-key"
+                    action playSoundC5
+                  }
+                  
+                  action playSoundC5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C5.mp3"
+                  }
+                  
+                  collider cs5-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (3.9750, -0.2000, 0.1500)
+                  }
+                  
+                  listener cs5-click {
+                    on collision
+                    target "cs5-key"
+                    action playSoundCs5
+                  }
+                  
+                  action playSoundCs5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C#5.mp3"
+                  }
+                  
+                  collider d5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.0500, 0.0000, 0.0000)
+                  }
+                  
+                  listener d5-click {
+                    on collision
+                    target "d5-key"
+                    action playSoundD5
+                  }
+                  
+                  action playSoundD5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D5.mp3"
+                  }
+                  
+                  collider ds5-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (4.1250, -0.2000, 0.1500)
+                  }
+                  
+                  listener ds5-click {
+                    on collision
+                    target "ds5-key"
+                    action playSoundDs5
+                  }
+                  
+                  action playSoundDs5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D#5.mp3"
+                  }
+                  
+                  collider e5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.2000, 0.0000, 0.0000)
+                  }
+                  
+                  listener e5-click {
+                    on collision
+                    target "e5-key"
+                    action playSoundE5
+                  }
+                  
+                  action playSoundE5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E5.mp3"
+                  }
+                  
+                  collider f5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.3500, 0.0000, 0.0000)
+                  }
+                  
+                  listener f5-click {
+                    on collision
+                    target "f5-key"
+                    action playSoundF5
+                  }
+                  
+                  action playSoundF5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F5.mp3"
+                  }
+                  
+                  collider fs5-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (4.4250, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs5-click {
+                    on collision
+                    target "fs5-key"
+                    action playSoundFs5
+                  }
+                  
+                  action playSoundFs5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#5.mp3"
+                  }
+                  
+                  collider g5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.5000, 0.0000, 0.0000)
+                  }
+                  
+                  listener g5-click {
+                    on collision
+                    target "g5-key"
+                    action playSoundG5
+                  }
+                  
+                  action playSoundG5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G5.mp3"
+                  }
+                  
+                  collider gs5-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (4.5750, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs5-click {
+                    on collision
+                    target "gs5-key"
+                    action playSoundGs5
+                  }
+                  
+                  action playSoundGs5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#5.mp3"
+                  }
+                  
+                  collider a5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.6500, 0.0000, 0.0000)
+                  }
+                  
+                  listener a5-click {
+                    on collision
+                    target "a5-key"
+                    action playSoundA5
+                  }
+                  
+                  action playSoundA5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A5.mp3"
+                  }
+                  
+                  collider as5-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (4.7250, -0.2000, 0.1500)
+                  }
+                  
+                  listener as5-click {
+                    on collision
+                    target "as5-key"
+                    action playSoundAs5
+                  }
+                  
+                  action playSoundAs5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#5.mp3"
+                  }
+                  
+                  collider b5-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.8000, 0.0000, 0.0000)
+                  }
+                  
+                  listener b5-click {
+                    on collision
+                    target "b5-key"
+                    action playSoundB5
+                  }
+                  
+                  action playSoundB5 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/B5.mp3"
+                  }
+                  
+                  collider c6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (4.9500, 0.0000, 0.0000)
+                  }
+                  
+                  listener c6-click {
+                    on collision
+                    target "c6-key"
+                    action playSoundC6
+                  }
+                  
+                  action playSoundC6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C6.mp3"
+                  }
+                  
+                  collider cs6-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (5.0250, -0.2000, 0.1500)
+                  }
+                  
+                  listener cs6-click {
+                    on collision
+                    target "cs6-key"
+                    action playSoundCs6
+                  }
+                  
+                  action playSoundCs6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/C#6.mp3"
+                  }
+                  
+                  collider d6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (5.1000, 0.0000, 0.0000)
+                  }
+                  
+                  listener d6-click {
+                    on collision
+                    target "d6-key"
+                    action playSoundD6
+                  }
+                  
+                  action playSoundD6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D6.mp3"
+                  }
+                  
+                  collider ds6-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (5.1750, -0.2000, 0.1500)
+                  }
+                  
+                  listener ds6-click {
+                    on collision
+                    target "ds6-key"
+                    action playSoundDs6
+                  }
+                  
+                  action playSoundDs6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/D#6.mp3"
+                  }
+                  
+                  collider e6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (5.2500, 0.0000, 0.0000)
+                  }
+                  
+                  listener e6-click {
+                    on collision
+                    target "e6-key"
+                    action playSoundE6
+                  }
+                  
+                  action playSoundE6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/E6.mp3"
+                  }
+                  
+                  collider f6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (5.4000, 0.0000, 0.0000)
+                  }
+                  
+                  listener f6-click {
+                    on collision
+                    target "f6-key"
+                    action playSoundF6
+                  }
+                  
+                  action playSoundF6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F6.mp3"
+                  }
+                  
+                  collider fs6-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (5.4750, -0.2000, 0.1500)
+                  }
+                  
+                  listener fs6-click {
+                    on collision
+                    target "fs6-key"
+                    action playSoundFs6
+                  }
+                  
+                  action playSoundFs6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/F#6.mp3"
+                  }
+                  
+                  collider g6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (5.5500, 0.0000, 0.0000)
+                  }
+                  
+                  listener g6-click {
+                    on collision
+                    target "g6-key"
+                    action playSoundG6
+                  }
+                  
+                  action playSoundG6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G6.mp3"
+                  }
+                  
+                  collider gs6-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (5.6250, -0.2000, 0.1500)
+                  }
+                  
+                  listener gs6-click {
+                    on collision
+                    target "gs6-key"
+                    action playSoundGs6
+                  }
+                  
+                  action playSoundGs6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/G#6.mp3"
+                  }
+                  
+                  collider a6-key {
+                    shape box(0.1500, 1.0000, 0.1000)
+                    position (5.7000, 0.0000, 0.0000)
+                  }
+                  
+                  listener a6-click {
+                    on collision
+                    target "a6-key"
+                    action playSoundA6
+                  }
+                  
+                  action playSoundA6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A6.mp3"
+                  }
+                  
+                  collider as6-key {
+                    shape box(0.1000, 0.6000, 0.1500)
+                    position (5.7750, -0.2000, 0.1500)
+                  }
+                  
+                  listener as6-click {
+                    on collision
+                    target "as6-key"
+                    action playSoundAs6
+                  }
+                  
+                  action playSoundAs6 {
+                    playSound
+                    path = "acoustic_grand_piano-mp3/A#6.mp3"
+                  }
+                  </textarea>
+            <button id="loadGadget" disabled>Load Gadget</button>
+        </div>
+
+        <div class="info">
+            <h3>About</h3>
+            <p>This example demonstrates the Gadget VM integrated with ThreeJS. The 3D scene uses ThreeJS for rendering, and the Gadget VM processes gadget definitions to control scene behavior.</p>
+            <p>You can edit the gadget definition above and click "Load Gadget" to parse it using the VM. Use the mouse to rotate the camera around the scene.</p>
+        </div>
+    </div>
+
+    <!-- ThreeJS from CDN -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { initThreeJSIntegration, loadGadget } from '../js-bindings/dist/threejs.js';
+
+        const statusEl = document.getElementById('status');
+        const container = document.getElementById('threejs-container');
+        const loadButton = document.getElementById('loadGadget');
+        const gadgetSourceEl = document.getElementById('gadgetSource');
+
+        let integration = null;
+        let renderer = null;
+        let scene = null;
+        let camera = null;
+        let controls = null;
+
+        // Initialize the application
+        async function init() {
+            try {
+                statusEl.textContent = 'Initializing ThreeJS scene...';
+                statusEl.className = 'status loading';
+
+                // Create scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xf0f0f0);
+
+                // Create camera
+                camera = new THREE.PerspectiveCamera(
+                    75,
+                    container.clientWidth / container.clientHeight,
+                    0.1,
+                    1000
+                );
+                camera.position.set(3, 3, 3);
+                camera.lookAt(0, 0, 0);
+
+                // Create renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.appendChild(renderer.domElement);
+
+                // Add orbit controls
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+
+                // Add light
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5, 10, 5);
+                scene.add(directionalLight);
+
+                // Create a simple box to demonstrate
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                const material = new THREE.MeshStandardMaterial({ color: 0x6699ff });
+                const box = new THREE.Mesh(geometry, material);
+                box.position.y = 0.5;
+                scene.add(box);
+
+                // Create ground
+                const groundGeometry = new THREE.PlaneGeometry(6, 6);
+                const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+                ground.rotation.x = -Math.PI / 2;
+                scene.add(ground);
+
+                // Animation loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                });
+
+                statusEl.textContent = 'Initializing Gadget VM...';
+                
+                // Initialize Gadget VM integration
+                integration = await initThreeJSIntegration(scene);
+
+                statusEl.textContent = 'Ready! Edit the gadget definition and click "Load Gadget".';
+                statusEl.className = 'status ready';
+                loadButton.disabled = false;
+
+                // Load initial gadget
+                await loadGadget(integration, gadgetSourceEl.value);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            }
+        }
+
+        // Load gadget handler
+        loadButton.addEventListener('click', async () => {
+            if (!integration) return;
+
+            try {
+                statusEl.textContent = 'Loading gadget...';
+                statusEl.className = 'status loading';
+                loadButton.disabled = true;
+
+                await loadGadget(integration, gadgetSourceEl.value);
+
+                statusEl.textContent = 'Gadget loaded successfully!';
+                statusEl.className = 'status ready';
+            } catch (error) {
+                console.error('Error loading gadget:', error);
+                statusEl.textContent = `Error: ${error.message}`;
+                statusEl.className = 'status error';
+            } finally {
+                loadButton.disabled = false;
+            }
+        });
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

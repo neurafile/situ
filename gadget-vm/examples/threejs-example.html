@@ -160,13 +160,13 @@
         <div class="controls">
             <h3>Gadget Definition</h3>
             <textarea id="gadgetSource" placeholder="Enter gadget definition...">
-collider box1 {
+collider c4-key {
   shape box(1, 1, 1)
 }
 
-listener click1 {
+listener c4-click {
   on collision
-  target "box1"
+  target "c4-box"
   action playSound
 }
 
